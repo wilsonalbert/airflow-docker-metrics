@@ -65,6 +65,9 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+            - PGDATA=/data/postgres
+        volumes:
+            - ./postgres:/data/postgres
 
     webserver:
         << : *airflow-common
@@ -76,8 +79,8 @@ services:
             - statsd-exporter
             - airflow-init
         ports:
-            - "8080:8080"
-        command: airflow webserver
+            - "8081:8080"
+        command: airflow webserver > /opt/airflow/logs/webserver.log
         healthcheck:
             test: ["CMD-SHELL", "[ -f /opt/airflow/airflow-webserver.pid ]"]
             interval: 30s
@@ -129,7 +132,7 @@ services:
         ports:
             - 9123:9102
             - 8125:8125/udp
-    
+
     prometheus:
         image: prom/prometheus
         container_name: airflow-prometheus
@@ -139,7 +142,7 @@ services:
         volumes:
             - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
             - ./prometheus/volume:/prometheus
-        
+
     grafana:
         image: grafana/grafana:7.1.5
         container_name: airflow-grafana
